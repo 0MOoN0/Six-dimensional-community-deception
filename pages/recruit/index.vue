@@ -64,7 +64,6 @@ export default {
   asyncData(){
     return axios.all([recruitApi.recommend(), recruitApi.newlist(),enterpriseApi.hotlist() ]).then(
       axios.spread( function( recommendList,newList ,hostList ){
-        console.log(recommendList.data.data)
         return {
           recommendList: recommendList.data.data,
           newList: newList.data.data,
