@@ -14,7 +14,11 @@ module.exports = {
     ]
   },
   plugins: [
-    { src:'~plugins/vue-infinite-scroll.js' ,ssr: false}
+    { src: '~plugins/vue-infinite-scroll.js', ssr: false },
+    { src: '~plugins/element-ui.js', ssr: false }
+  ],
+  css: [
+    'element-ui/lib/theme-chalk/index.css' // 全部引用的时候需要用到
   ],
   /*
   ** Customize the progress bar color
@@ -27,7 +31,7 @@ module.exports = {
     /*
     ** Run ESLint on save
     */
-    extend (config, { isDev, isClient }) {
+    extend(config, { isDev, isClient }) {
       if (isDev && isClient) {
         config.module.rules.push({
           enforce: 'pre',
