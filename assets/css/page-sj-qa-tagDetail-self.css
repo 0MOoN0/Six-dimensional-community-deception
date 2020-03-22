@@ -1,0 +1,4 @@
+.sysBox .el-pagination.is-background .el-pager li:not(.disabled).active {
+    background-color: #FD7A3A;   
+    color: #fff;
+  }

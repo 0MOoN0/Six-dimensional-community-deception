@@ -15,7 +15,7 @@ module.exports = {
   },
   plugins: [
     { src: '~plugins/vue-infinite-scroll.js', ssr: false },
-    { src: '~plugins/element-ui.js', ssr: false },
+    { src: '~plugins/element-ui.js', ssr: true },
     { src: '~plugins/nuxt-quill-plugin.js', ssr: false}
   ],
   css: [
