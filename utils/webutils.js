@@ -41,5 +41,12 @@ export default {
                 return dayNum + "分钟前";
             }
         }
+    },
+    formatCreatedTime(milliseconds) {
+        var da = new Date(milliseconds);
+        var year = da.getFullYear() + '年';
+        var month = da.getMonth() + 1 + '月';
+        var date = da.getDate() + '日';
+        return [year,month,date].join('');
     }
 }

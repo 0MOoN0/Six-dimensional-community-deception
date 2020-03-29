@@ -65,7 +65,7 @@
                           </ul>
                           <div class="fr brower">
                             <p>
-                              浏览量 {{item.visits}} | {{item.createtime}} 来自
+                              浏览量 {{item.visits}} | {{item.createtime | formatCreatedTime}} 来自
                               <a
                                 href="#"
                               >{{item.nickname}}</a>
@@ -106,7 +106,7 @@
                         <div class="other">
                           <div class="fr brower">
                             <p>
-                              浏览量 {{item.visits}} | {{item.createtime}} 来自
+                              浏览量 {{item.visits}} | {{item.createtime | formatCreatedTime}} 来自
                               <a
                                 href="#"
                               >{{item.nickname}}</a>
@@ -146,7 +146,7 @@
                         <div class="other">
                           <div class="fr brower">
                             <p>
-                              浏览量 {{item.visits}} | {{new Date(item.createtime)}} 来自
+                              浏览量 {{item.visits}} | {{item.createtime | formatCreatedTime}} 来自
                               <a
                                 href="#"
                               >{{item.nickname}}</a>
@@ -162,10 +162,6 @@
             </div>
           </div>
         </div>
-        <div id="php" class="tab-pane">php</div>
-        <div id="js" class="tab-pane">Javascript</div>
-        <div id="python" class="tab-pane">python</div>
-        <div id="java" class="tab-pane">java</div>
       </div>
     </div>
     <div class="fl right-tag">
@@ -179,13 +175,9 @@
         </div>
         <div class="tags">
           <ul class="sui-tag">
-            <li>Php</li>
-            <li>Javascript</li>
-            <li>Gif</li>
-            <li>Java</li>
-            <li>C#</li>
-            <li>iOS</li>
-            <li>C++</li>
+            <li v-for="(label, index) in hotLabels" :key="index">
+              {{label.labelname}}
+            </li>
           </ul>
         </div>
       </div>
@@ -198,6 +190,7 @@ import "~/assets/css/page-sj-qa-logined.css";
 import problemApi from "@/api/problem";
 import axios from "axios";
 import webutils from "@/utils/webutils";
+import labelApi from "@/api/label";
 export default {
   asyncData({ params }) {
     return axios
@@ -208,14 +201,6 @@ export default {
       ])
       .then(
         axios.spread(function(newlist, hotlist, waitlist) {
-           newlist.data.data.rows.forEach(qa => {
-            problemApi.getLabelsByProblemId(qa.id).then(res => {
-              qa["label"] = res.data.data;
-              console.log("before===================");
-              console.log(newlist.data.data.rows);
-            });
-          }); 
-          console.log(newlist.data.data.rows)
           return {
             newlist: newlist.data.data.rows,
             hotlist: hotlist.data.data.rows,
@@ -226,9 +211,9 @@ export default {
       );
   },
   created() {
-/*     console.log("after===================");
-    console.log(this.newlist); */
-    // this.fetchLabelData("newlist");
+    labelApi.toplist().then(res => {
+      this.hotLabels = res.data.data;
+    })
   },
   data() {
     return {
@@ -240,46 +225,20 @@ export default {
         newlist: {},
         hostlist: {},
         waitlist: {}
-      }
+      },
+      hotLabels:{}
     };
   },
   methods: {
-    /*     loadMore() {
-      if (this.type === "new") {
-        this.page_new++;
-        problemApi.list("newlist", this.page_new, 10).then(res => {
-          this.newlist = this.newlist.concat(res.data.data.rows);
-        });
-      }
-      if (this.type === "hot") {
-        this.page_hot++;
-        problemApi.list("hotlist", this.page_hot, 10).then(res => {
-          this.hotlist = this.hotlist.concat(res.data.data.rows);
-        });
-      }
-      if (this.type === "wait") {
-        this.page_wait++;
-        problemApi.list("waitlist", this.page_wait, 10).then(res => {
-          this.waitlist = this.waitlist.concat(res.data.data.rows);
-        });
-      }
-    }, */
     fetchLabelData(qaType) {
       if (qaType === "newlist") {
-        // console.log(this.newlist)
         this.newlist.forEach(qa => {
-          // console.log(qa)
-
           problemApi.getLabelsByProblemId(parseInt(qa.id)).then(res => {
-            // console.log(res.data.data)
-            // console.log(typeof(qa.id)) string
             console.log(res.data.data);
             this.qaLabel.newlist[0] = true;
             this.qaLabel.newlist[qa.id] = res.data.data;
           });
         });
-        // console.log(this.qaLabel);
-        // console.log(this.newlist)
       } else if (qaType === "waitlist") {
       } else if (qaType === "hotlist") {
       }
@@ -289,6 +248,9 @@ export default {
     //时间戳显示格式为几天前、几分钟前、几秒前
     getTimeFormat(valueTime) {
       return webutils.getTimeFormat(valueTime);
+    },
+    formatCreatedTime(milliseconds){
+      return webutils.formatCreatedTime(milliseconds);
     }
   }
 };
