@@ -86,34 +86,6 @@
                     @current-change="handleCurrentChange"
                     :page-size="pageSize"
                   ></el-pagination>
-                  <!--                   <div class="sui-pagination">
-                    <ul>
-                      <li class="prev">
-                        <a href="#">上一页</a>
-                      </li>
-                      <li class="active">
-                        <a href="#">1</a>
-                      </li>
-                       <li>
-                        <a href="#">2</a>
-                      </li>
-                      <li>
-                        <a href="#">3</a>
-                      </li>
-                      <li>
-                        <a href="#">4</a>
-                      </li>
-                      <li>
-                        <a href="#">5</a>
-                      </li>
-                      <li class="dotted">
-                        <span>...</span>
-                      </li>
-                      <li class="next">
-                        <a href="#">下一页</a>
-                      </li>
-                    </ul>
-                  </div>-->
                 </div>
                 <!-- 百科 -->
                 <div id="baike" :class="'tab-pane '+(type=='baike'?'active':'')">
@@ -141,6 +113,7 @@ export default {
       ])
       .then(
         axios.spread(function(qaList) {
+          console.log(qaList)
           return {
             qaList: qaList.data.data,
             label: params.id

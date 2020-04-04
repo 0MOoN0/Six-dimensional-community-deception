@@ -7,13 +7,13 @@
           <div class="tab-bottom-line">
             <ul class="sui-nav nav-tabs">
               <li :class="type=='new'?'active':''">
-                <a @click="type='new'">最新回答</a>
+                <a @click="switchType('new')">最新回答</a>
               </li>
               <li :class="type=='hot'?'active':''">
-                <a @click="type='hot'">热门回答</a>
+                <a @click="switchType('hot')">热门回答</a>
               </li>
               <li :class="type=='wait'?'active':''">
-                <a @click="type='wait'">等待回答</a>
+                <a @click="switchType('wait')">等待回答</a>
               </li>
             </ul>
             <!--  v-infinite-scroll="loadMore" -->
@@ -47,16 +47,8 @@
                         </div>
                         <div class="other">
                           <!-- 问题相关标签 -->
-                          <div>{{qaLabel.newlist[0]}}</div>
-                          <div>{{item.label}}</div>
+                          <!-- <div>{{qaLabel.newlist[0]}}</div> -->
                           <ul class="fl sui-tag">
-                            <!-- {{item.id | getLabelsByProblemId(item.id)}} -->
-                            <!--                                                           <li
-                              v-for="(label, labelsIndex) in qaLabel.newlist[item.id]"
-                              :key="labelsIndex"
-                            >{{label.labelname}}sdsd</li>-->
-
-                            
                             <li
                               v-for="(label, labelsIndex) in item.label"
                               :key="labelsIndex"
@@ -104,6 +96,13 @@
                           </p>
                         </div>
                         <div class="other">
+                          <ul class="fl sui-tag">
+                            <li
+                              v-for="(label, labelsIndex) in item.label"
+                              :key="labelsIndex"
+                            >{{label.labelname}}</li>
+                            <!-- {{item.id}} -->
+                          </ul>
                           <div class="fr brower">
                             <p>
                               浏览量 {{item.visits}} | {{item.createtime | formatCreatedTime}} 来自
@@ -144,6 +143,13 @@
                           </p>
                         </div>
                         <div class="other">
+                          <ul class="fl sui-tag">
+                            <li
+                              v-for="(label, labelsIndex) in item.label"
+                              :key="labelsIndex"
+                            >{{label.labelname}}</li>
+                            <!-- {{item.id}} -->
+                          </ul>
                           <div class="fr brower">
                             <p>
                               浏览量 {{item.visits}} | {{item.createtime | formatCreatedTime}} 来自
@@ -175,9 +181,7 @@
         </div>
         <div class="tags">
           <ul class="sui-tag">
-            <li v-for="(label, index) in hotLabels" :key="index">
-              {{label.labelname}}
-            </li>
+            <li v-for="(label, index) in hotLabels" :key="index">{{label.labelname}}</li>
           </ul>
         </div>
       </div>
@@ -192,28 +196,24 @@ import axios from "axios";
 import webutils from "@/utils/webutils";
 import labelApi from "@/api/label";
 export default {
-  asyncData({ params }) {
-    return axios
-      .all([
-        problemApi.list("newlist", 1, 10),
-        problemApi.list("hotlist", 1, 10),
-        problemApi.list("waitlist", 1, 10)
-      ])
-      .then(
-        axios.spread(function(newlist, hotlist, waitlist) {
-          return {
-            newlist: newlist.data.data.rows,
-            hotlist: hotlist.data.data.rows,
-            waitlist: waitlist.data.data.rows,
-            label: params.label
-          };
-        })
-      );
-  },
+  asyncData({ params }) {},
   created() {
     labelApi.toplist().then(res => {
       this.hotLabels = res.data.data;
-    })
+    }),
+      // 第一次加载newlist
+      problemApi.list("newlist", 1, 10).then(res => {
+        res.data.data.rows.map(item => {
+          this.newlist = [];
+          return problemApi.getLabelsByProblemId(item.id).then(lab => {
+            let newItem = {
+              ...item,
+              label: lab.data.data
+            };
+            this.newlist = this.newlist.concat(newItem);
+          });
+        });
+      });
   },
   data() {
     return {
@@ -221,27 +221,53 @@ export default {
       page_new: 1,
       page_hot: 1,
       page_wait: 1,
-      qaLabel: {
-        newlist: {},
-        hostlist: {},
-        waitlist: {}
-      },
-      hotLabels:{}
+      hotLabels: {},
+      waitlist: [],
+      hotlist: [],
+      newlist: []
     };
   },
   methods: {
-    fetchLabelData(qaType) {
-      if (qaType === "newlist") {
-        this.newlist.forEach(qa => {
-          problemApi.getLabelsByProblemId(parseInt(qa.id)).then(res => {
-            console.log(res.data.data);
-            this.qaLabel.newlist[0] = true;
-            this.qaLabel.newlist[qa.id] = res.data.data;
+    switchType(listType) {
+      if (listType === "new") {
+        this.type = "new";
+      } else if (listType === "wait") {
+        this.type = "wait";
+        if (this.waitlist.length == 0) {
+          this.fetchWaitList();
+        }
+      } else if (listType === "hot") {
+        this.type = "hot";
+        if (this.hotlist.length == 0) {
+          this.fetchHotList();
+        }
+      }
+    },
+    fetchWaitList() {
+      problemApi.list("waitlist", 1, 10).then(res => {
+        res.data.data.rows.map(item => {
+          problemApi.getLabelsByProblemId(item.id).then(lab => {
+            let newItem = {
+              ...item,
+              label: lab.data.data
+            };
+            this.waitlist = this.waitlist.concat(newItem);
           });
         });
-      } else if (qaType === "waitlist") {
-      } else if (qaType === "hotlist") {
-      }
+      });
+    },
+    fetchHotList() {
+      problemApi.list("hotlist", 1, 10).then(res => {
+        res.data.data.rows.map(item => {
+          problemApi.getLabelsByProblemId(item.id).then(lab => {
+            let newItem = {
+              ...item,
+              label: lab.data.data
+            };
+            this.hotlist = this.hotlist.concat(newItem);
+          });
+        });
+      });
     }
   },
   filters: {
@@ -249,7 +275,7 @@ export default {
     getTimeFormat(valueTime) {
       return webutils.getTimeFormat(valueTime);
     },
-    formatCreatedTime(milliseconds){
+    formatCreatedTime(milliseconds) {
       return webutils.formatCreatedTime(milliseconds);
     }
   }

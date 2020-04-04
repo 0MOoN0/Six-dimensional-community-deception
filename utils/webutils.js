@@ -17,7 +17,6 @@ export default {
                 h = h < 10 ? "0" + h : h;
                 let minute = date.getMinutes();
                 let second = date.getSeconds();
-                console.log(second);
                 minute = minute < 10 ? "1" + minute : minute;
                 second = second < 10 ? "0" + second : second;
                 return m + "-" + d + " " + h + ":" + minute;
