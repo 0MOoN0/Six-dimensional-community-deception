@@ -6,7 +6,7 @@
           <!--  v-infinite-scroll="loadMore"：会出现错误Failed to execute 'observe' on 'MutationObserver': parameter 1 is not of type 'Node'. -->
           <div class="tc-list">
             <ul class="detail-list">
-              <li class="qa-item" v-for="(item,index) in items" :key="index">
+              <li class="qa-item" v-for="(item,index) in spits" :key="index">
                 <div class="fl record">
                   <div class="number">
                     <div class="border useful">
@@ -26,7 +26,7 @@
                 </div>
                 <div class="info">
                   <p class="text">
-                    <router-link :to="'/spit/'+item._id">{{item.content}}</router-link>
+                    <router-link :to="'/spit/'+item.cid">{{item.content}}</router-link>
                   </p>
                   <div class="other">
                     <div class="fl date">
@@ -65,8 +65,8 @@ import { getUser } from "@/utils/auth";
 
 export default {
   asyncData() {
-    return spitApi.search(1, 10, { state: "1" }).then(res => {
-      // console.log(res.data.data.rows)
+/*     return spitApi.search(1, 10, { state: "1" }).then(res => {
+      console.log(res.data.data.rows);
       let tmp = res.data.data.rows.map(item => {
         return {
           ...item,
@@ -74,11 +74,40 @@ export default {
         };
       });
       return { items: tmp };
+    }); */
+  },
+  created(){
+    spitApi.search(1, 10, { state: "1" }).then(res => {
+      // console.log(res.data.data.rows);
+      /* let tmp =  */res.data.data.rows.map(item => {
+        spitApi.isThumbuped(item.cid).then(isThumbupRes => {
+          let newSpit = item
+          console.log(isThumbupRes.data.data)
+          if(isThumbupRes.data.data == 1){
+            newSpit = {
+              ...item,
+              zan: "color"
+            }
+          }else{
+            newSpit = {
+              ...item,
+              zan: ""
+            }
+          }
+          this.spits = this.spits.concat(newSpit);
+        })
+/*         return {
+          ...item,
+          zan: ""
+        }; */
+      });
+      /* return { items: tmp }; */
     });
   },
   data() {
     return {
-      pageNo: 1
+      pageNo: 1,
+      spits: []
     };
   },
   methods: {
@@ -110,11 +139,17 @@ export default {
         });
         return;
       }
-
       this.items[index].zan = "color";
-      spitApi.thumbup(this.items[index].id).then(res => {
+      spitApi.thumbup(this.items[index].cid).then(res => {
         if (res.data.flag) {
-          this.items[index].thumbup++;
+          if (res.data.code === 20000) {
+            this.items[index].thumbup++;
+          } else if (res.data.code === 20005) {
+            this.$message({
+              message: "不可以重复点赞哦~",
+              type: "warning"
+            });
+          }
         }
       });
     }

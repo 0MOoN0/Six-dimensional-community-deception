@@ -136,9 +136,9 @@ export default {
         this.$message({
           message: res.data.message,
           type: res.data.flag ? "success" : "error"
-        })
-        location.href = "/login"
-      })
+        });
+        location.href = "/login";
+      });
     },
     login() {
       userApi.login(this.mobile, this.password).then(res => {
@@ -149,8 +149,7 @@ export default {
             res.data.data.name,
             res.data.data.avatar
           );
-
-          location.href = "/manager" //用户中心
+          location.href = "/manager"; //用户中心
         } else {
           this.$message({
             message: res.data.message,
