@@ -21,9 +21,9 @@ export default {
       method: 'get'
     })
   },
-  commentlist(id) {
+  commentlist(id, page, size) {
     return request({
-      url: `/${group_name}/${api_name}/commentlist/${id}`,
+      url: `/${group_name}/${api_name}/commentlist/${id}/${page}/${size}`,
       method: 'get'
     })
   },

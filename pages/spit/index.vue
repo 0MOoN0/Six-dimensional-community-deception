@@ -5,8 +5,8 @@
         <div class="tc-data-list">
           <!--  v-infinite-scroll="loadMore"：会出现错误Failed to execute 'observe' on 'MutationObserver': parameter 1 is not of type 'Node'. -->
           <div class="tc-list">
-            <ul class="detail-list">
-              <li class="qa-item" v-for="(item,index) in spits" :key="index">
+            <ul class="detail-list" v-infinite-scroll="loadMore" style="overflow:auto" infinite-scroll-disabled="busy" infinite-scroll-distance="20">
+              <li class="qa-item infinite-list-item" v-for="(item,index) in spits" :key="index">
                 <div class="fl record">
                   <div class="number">
                     <div class="border useful">
@@ -26,7 +26,7 @@
                 </div>
                 <div class="info">
                   <p class="text">
-                    <router-link :to="'/spit/'+item.cid">{{item.content}}</router-link>
+                    <router-link :to="'/spit/'+item.cid" v-html="item.content"></router-link>
                   </p>
                   <div class="other">
                     <div class="fl date">
@@ -64,64 +64,52 @@ import spitApi from "@/api/spit";
 import { getUser } from "@/utils/auth";
 
 export default {
-  asyncData() {
-/*     return spitApi.search(1, 10, { state: "1" }).then(res => {
-      console.log(res.data.data.rows);
-      let tmp = res.data.data.rows.map(item => {
-        return {
-          ...item,
-          zan: ""
-        };
-      });
-      return { items: tmp };
-    }); */
-  },
-  created(){
-    spitApi.search(1, 10, { state: "1" }).then(res => {
-      // console.log(res.data.data.rows);
-      /* let tmp =  */res.data.data.rows.map(item => {
+  asyncData() {},
+  created() {
+    spitApi.search(1, 10, { state: "1",parentid: "-1" }).then(res => {
+      res.data.data.rows.map(item => {
         spitApi.isThumbuped(item.cid).then(isThumbupRes => {
-          let newSpit = item
-          console.log(isThumbupRes.data.data)
-          if(isThumbupRes.data.data == 1){
+          let newSpit = item;
+          if (isThumbupRes.data.data == 1) {
             newSpit = {
               ...item,
               zan: "color"
-            }
-          }else{
+            };
+          } else {
             newSpit = {
               ...item,
               zan: ""
-            }
+            };
           }
           this.spits = this.spits.concat(newSpit);
-        })
-/*         return {
-          ...item,
-          zan: ""
-        }; */
+        });
       });
-      /* return { items: tmp }; */
     });
   },
   data() {
     return {
       pageNo: 1,
-      spits: []
+      spits: [],
+      busy: false
     };
   },
   methods: {
     loadMore() {
-      this.pageNo++;
-      spitApi.search(this.pageNo, 10, { state: "1" }).then(res => {
-        let tmp = res.data.data.rows.map(item => {
-          return {
-            ...item,
-            zan: ""
-          };
+      this.busy = true
+      setTimeout(() => {
+        console.log("loadmore")
+        this.pageNo++;
+        spitApi.search(this.pageNo, 10, { state: "1", parentid:"-1"}).then(res => {
+          let tmp = res.data.data.rows.map(item => {
+            return {
+              ...item,
+              zan: ""
+            };
+          });
+          this.spits = this.spits.concat(tmp);
         });
-        this.items = this.items.concat(tmp);
-      });
+        this.busy = false
+        }, 2000)
     },
     thumbup(index) {
       //判断用户是否登陆

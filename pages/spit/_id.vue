@@ -8,7 +8,7 @@
         <a href="javascript:;">{{pojo.nickname}}</a> 发布 
        </div> 
        <div class="detail-content"> 
-        <p>{{pojo.content}}</p> 
+        <p v-html="pojo.content"></p> 
        
        </div> 
        <div class="detail-tool"> 
@@ -32,7 +32,7 @@
          </div> 
          <div class="item-content"> 
           <p class="author"><a href="javascript:;">{{item.nickname}}</a> 发布</p> 
-          <p class="content">{{item.content}}</p> 
+          <p class="content" v-html="item.content"></p> 
          </div> 
          <div class="item-thumb"> 
           <div>
@@ -74,12 +74,11 @@ import spitApi from '@/api/spit'
 import axios from 'axios'
 export default {
     asyncData({params}){
-        
-        return axios.all( [ spitApi.findById(params.id),spitApi.commentlist(params.id)  ] ).then( 
+        return axios.all( [ spitApi.findById(params.id),spitApi.commentlist(params.id,1,10)  ] ).then( 
             axios.spread( function( pojo,commentlist ){
                 return {
                     pojo: pojo.data.data,
-                    commentlist: commentlist.data.data
+                    commentlist: commentlist.data.data.rows
                 } 
             })
          )
@@ -107,7 +106,7 @@ export default {
         this.content = html
       },
       save(){
-          spitApi.save({ content:this.content,parentid:this.pojo.id }  ).then(res=>{
+          spitApi.save({ content:this.content,parentid:this.pojo.cid }  ).then(res=>{
               this.$message({
                   message: res.data.message,
                   type: (res.data.flag?'success':'error')
@@ -116,7 +115,7 @@ export default {
                   this.dialogVisible=false //关闭窗口
                   //刷新数据
                   spitApi.commentlist(this.pojo.id ).then( res=>{
-                      this.commentlist=res.data.data
+                      this.commentlist=res.data.data.rows
                   })
               }
           })
@@ -127,7 +126,6 @@ export default {
 </script>
 
 <style>
-
 .quill-editor {
       min-height: 200px;
       max-height: 400px;

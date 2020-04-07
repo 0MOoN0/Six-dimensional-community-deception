@@ -66,7 +66,7 @@ export default {
       this.content = html;
     },
     save() {
-      spitApi.save({ content: this.content }).then(res => {
+      spitApi.save({ content: this.content,parentid: "-1" }).then(res => {
         this.$message({
           message: res.data.message,
           type: res.data.flag ? "success" : "error"
