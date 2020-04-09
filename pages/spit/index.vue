@@ -3,9 +3,15 @@
     <div class="wrapper tag-item">
       <div class="fl left-list">
         <div class="tc-data-list">
-          <!--  v-infinite-scroll="loadMore"：会出现错误Failed to execute 'observe' on 'MutationObserver': parameter 1 is not of type 'Node'. -->
-          <div class="tc-list">
-            <ul class="detail-list" v-infinite-scroll="loadMore" style="overflow:auto" infinite-scroll-disabled="busy" infinite-scroll-distance="20">
+          <div
+            class="tc-list"
+            v-infinite-scroll="loadMore"
+            infinite-scroll-disabled="busy"
+            infinite-scroll-distance="20"
+            style="overflow:auto"
+          >
+            <!-- Exception:会自动触发loadMore直到所有数据加载完 -->
+            <ul class="detail-list">
               <li class="qa-item infinite-list-item" v-for="(item,index) in spits" :key="index">
                 <div class="fl record">
                   <div class="number">
@@ -36,8 +42,9 @@
                       <a href="#" data-toggle="modal" data-target="#shareModal" class="share">
                         <i class="fa fa-share-alt" aria-hidden="true"></i> 分享
                       </a>
-                      <a href="#" data-toggle="modal" data-target="#remarkModal" class="comment">
-                        <i class="fa fa-commenting" aria-hidden="true"></i> 回复
+                      <a @click="dialogVisible=true;content=''" class="comment">
+                        <i class="fa fa-commenting" aria-hidden="true"></i>
+                        <sapn>{{item.comment}}回复</sapn>
                       </a>
                     </div>
                   </div>
@@ -56,6 +63,20 @@
       </div>
       <div class="clearfix"></div>
     </div>
+    <div>
+      <el-dialog title="评论" :visible.sync="dialogVisible" width="40%">
+        <div
+          class="quill-editor"
+          :content="content"
+          @change="onEditorChange($event)"
+          v-quill:myQuillEditor="editorOption"
+        ></div>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="dialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="save">提交</el-button>
+        </span>
+      </el-dialog>
+    </div>
   </div>
 </template>
 <script>
@@ -66,7 +87,7 @@ import { getUser } from "@/utils/auth";
 export default {
   asyncData() {},
   created() {
-    spitApi.search(1, 10, { state: "1",parentid: "-1" }).then(res => {
+    spitApi.search(1, 10, { state: "1", parentid: "-1" }).then(res => {
       res.data.data.rows.map(item => {
         spitApi.isThumbuped(item.cid).then(isThumbupRes => {
           let newSpit = item;
@@ -90,26 +111,41 @@ export default {
     return {
       pageNo: 1,
       spits: [],
-      busy: false
+      busy: false,
+      dialogVisible: false,
+      content: "",
+      editorOption: {
+        // some quill options
+        modules: {
+          toolbar: [
+            [{ size: ["small", false, "large"] }],
+            ["bold", "italic"],
+            [{ list: "ordered" }, { list: "bullet" }],
+            ["link", "image"]
+          ]
+        }
+      }
     };
   },
   methods: {
     loadMore() {
-      this.busy = true
+      this.busy = true;
       setTimeout(() => {
-        console.log("loadmore")
+        console.log("loadmore");
         this.pageNo++;
-        spitApi.search(this.pageNo, 10, { state: "1", parentid:"-1"}).then(res => {
-          let tmp = res.data.data.rows.map(item => {
-            return {
-              ...item,
-              zan: ""
-            };
+        spitApi
+          .search(this.pageNo, 10, { state: "1", parentid: "-1" })
+          .then(res => {
+            let tmp = res.data.data.rows.map(item => {
+              return {
+                ...item,
+                zan: ""
+              };
+            });
+            this.spits = this.spits.concat(tmp);
           });
-          this.spits = this.spits.concat(tmp);
-        });
-        this.busy = false
-        }, 2000)
+        this.busy = false;
+      }, 2000);
     },
     thumbup(index) {
       //判断用户是否登陆

@@ -102,7 +102,6 @@ export default {
     },
     methods:{
        onEditorChange({ editor, html, text }) {
-        console.log('editor change!', editor, html, text)
         this.content = html
       },
       save(){
