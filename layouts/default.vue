@@ -18,15 +18,15 @@
                 <router-link tag="li" to="/gathering" active-class="active">
                   <a>活动</a>
                 </router-link>
-                <router-link tag="li" to="/friend" active-class="active">
+                <!--                 <router-link tag="li" to="/friend" active-class="active">
                   <a>交友</a>
-                </router-link>
+                </router-link>-->
                 <router-link tag="li" to="/spit" active-class="active">
                   <a>吐槽</a>
                 </router-link>
-                <router-link tag="li" to="/recruit" active-class="active">
+                <!--                 <router-link tag="li" to="/recruit" active-class="active">
                   <a>招聘</a>
-                </router-link>
+                </router-link>-->
               </ul>
               <form class="sui-form sui-form pull-left">
                 <input type="text" placeholder="输入关键词..." />
@@ -34,19 +34,26 @@
               </form>
               <div class="sui-nav pull-right info" v-if="user.name!==undefined">
                 <li>
-                  <a href="/manager" class="notice">{{user.name}}</a>
+                  <a href="/manager">{{user.name}}</a>
                 </li>
                 <li>
-                  <a @click="logout" class="notice">退出登陆</a>
+                  <a @click="logout">退出登陆</a>
                 </li>
                 <li>
                   <a href="/manager" class="homego">
-                    <img :src="user.avatar" width="50px" height="50px" :alt="user.name" />
+                    <!-- :src="user.avatar" -->
+                    <img width="50px" height="50px" :alt="user.name" />
                   </a>
                 </li>
               </div>
+              <!-- 未登录 -->
               <div class="sui-nav pull-right info" v-if="user.name===undefined">
-                <router-link to="/login">登陆</router-link>
+                <li>
+                  <router-link to="/login" tag="a">注册</router-link>
+                </li>
+                <li>
+                  <router-link to="/login" tag="a" class="sui-btn btn-login">登陆</router-link>
+                </li>
               </div>
             </div>
           </div>
@@ -100,6 +107,8 @@ import "~/assets/plugins/sui/sui-append.min.css";
 import "~/assets/plugins/font-awesome/css/font-awesome.min.css";
 import "~/assets/css/widget-base.css";
 import "~/assets/css/widget-head-foot.css";
+import "~/assets/css/page-sj-headline-login.css";
+import "~/assets/css/page-headline-logined.css";
 import { getUser, removeUser } from "@/utils/auth";
 export default {
   data() {

@@ -83,7 +83,6 @@
 import "~/assets/css/page-sj-spit-index.css";
 import spitApi from "@/api/spit";
 import { getUser } from "@/utils/auth";
-
 export default {
   asyncData() {},
   created() {
@@ -115,7 +114,6 @@ export default {
       dialogVisible: false,
       content: "",
       editorOption: {
-        // some quill options
         modules: {
           toolbar: [
             [{ size: ["small", false, "large"] }],
@@ -128,21 +126,34 @@ export default {
     };
   },
   methods: {
+    onEditorChange({ editor, html, text }) {
+      this.content = html;
+    },
     loadMore() {
       this.busy = true;
       setTimeout(() => {
-        console.log("loadmore");
+        // console.log("loadmore");
         this.pageNo++;
         spitApi
           .search(this.pageNo, 10, { state: "1", parentid: "-1" })
           .then(res => {
             let tmp = res.data.data.rows.map(item => {
-              return {
-                ...item,
-                zan: ""
-              };
+              spitApi.isThumbuped(item.cid).then(isThumbupRes => {
+                let newSpit = item;
+                if (isThumbupRes.data.data == 1) {
+                  newSpit = {
+                    ...item,
+                    zan: "color"
+                  };
+                } else {
+                  newSpit = {
+                    ...item,
+                    zan: ""
+                  };
+                }
+                this.spits = this.spits.concat(newSpit);
+              });
             });
-            this.spits = this.spits.concat(tmp);
           });
         this.busy = false;
       }, 2000);
@@ -156,23 +167,23 @@ export default {
         });
         return;
       }
-      if (this.items[index].zan === "color") {
+      if (this.spits[index].zan === "color") {
         this.$message({
           message: "不可以重复点赞哦~",
           type: "warning"
-        });
-        return;
+        })
+        return
       }
-      this.items[index].zan = "color";
-      spitApi.thumbup(this.items[index].cid).then(res => {
+      this.spits[index].zan = "color";
+      spitApi.thumbup(this.spits[index].cid).then(res => {
         if (res.data.flag) {
           if (res.data.code === 20000) {
-            this.items[index].thumbup++;
+            this.spits[index].thumbup++;
           } else if (res.data.code === 20005) {
             this.$message({
               message: "不可以重复点赞哦~",
               type: "warning"
-            });
+            })
           }
         }
       });

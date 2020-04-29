@@ -5,6 +5,7 @@
       <div class="tab-content">
         <div id="index" class="tab-pane active">
           <div class="tab-bottom-line">
+            <!-- 问答首页 -->
             <ul class="sui-nav nav-tabs">
               <li :class="type=='new'?'active':''">
                 <a @click="switchType('new')">最新回答</a>
@@ -19,6 +20,7 @@
             <!--  v-infinite-scroll="loadMore" -->
             <div class="qa-list">
               <div class="tab-content">
+                <!-- 最新回答 -->
                 <div id="new" :class="'tab-pane '+(type=='new'?'active':'')">
                   <ul class="detail-list">
                     <li class="qa-item" v-for="(item,index) in newlist" :key="index">
@@ -37,12 +39,12 @@
                       <div class="fl info">
                         <!-- 问题相关信息 -->
                         <div class="question">
-                          <p class="author">
+                          <p class="author" v-if="item.reply > 0">
                             <span class="name">{{item.replyname}}</span>
                             <span>{{item.replytime | getTimeFormat}}</span>回答
                           </p>
                           <p class="title">
-                            <a href="./qa-detail.html" target="_blank">{{item.title}}</a>
+                            <nuxt-link :to="`/qa/`+item.id" target="_blank">{{item.title}}</nuxt-link>
                           </p>
                         </div>
                         <div class="other">
@@ -70,6 +72,7 @@
                     </li>
                   </ul>
                 </div>
+                <!-- 热门列表 -->
                 <div id="hot" :class="'tab-pane '+(type=='hot'?'active':'')">
                   <ul class="detail-list">
                     <li class="qa-item" v-for="(item,index) in hotlist" :key="index">
@@ -87,12 +90,13 @@
                       </div>
                       <div class="fl info">
                         <div class="question">
-                          <p class="author">
+                          <p class="author"  v-if="item.reply > 0">
                             <span class="name">{{item.replyname}}</span>
                             <span>{{item.replytime | getTimeFormat}}</span>回答
                           </p>
                           <p class="title">
-                            <a href="./qa-detail.html" target="_blank">{{item.title}}</a>
+                            <nuxt-link :to="`/qa/`+item.id" target="_blank">{{item.title}}</nuxt-link>
+                            <!-- <a href="./qa-detail.html" target="_blank">{{item.title}}</a> -->
                           </p>
                         </div>
                         <div class="other">
@@ -101,7 +105,6 @@
                               v-for="(label, labelsIndex) in item.label"
                               :key="labelsIndex"
                             >{{label.labelname}}</li>
-                            <!-- {{item.id}} -->
                           </ul>
                           <div class="fr brower">
                             <p>
@@ -117,6 +120,7 @@
                     </li>
                   </ul>
                 </div>
+                <!-- 等待回答 -->
                 <div id="wait" :class="'tab-pane '+(type=='wait'?'active':'')">
                   <ul class="detail-list">
                     <li class="qa-item" v-for="(item,index) in waitlist" :key="index">
@@ -134,12 +138,13 @@
                       </div>
                       <div class="fl info">
                         <div class="question">
-                          <p class="author">
+                          <p class="author"  v-if="item.reply > 0">
                             <span class="name">{{item.replyname}}</span>
                             <span>{{item.replytime | getTimeFormat}}</span>回答
                           </p>
                           <p class="title">
-                            <a href="./qa-detail.html" target="_blank">{{item.title}}</a>
+                            <!-- <a href="./qa-detail.html" target="_blank">{{item.title}}</a> -->
+                            <nuxt-link :to="`/qa/`+item.id" target="_blank">{{item.title}}</nuxt-link>
                           </p>
                         </div>
                         <div class="other">
@@ -173,7 +178,7 @@
     <div class="fl right-tag">
       <div class="block-btn">
         <p>今天，要提个问题吗?</p>
-        <a class="sui-btn btn-block btn-share" href="./qa-submit.html" target="_blank">发布问题</a>
+        <a class="sui-btn btn-block btn-share" href="/qa/submit" target="_blank">发布问题</a>
       </div>
       <div class="hot-tags">
         <div class="head">
@@ -203,17 +208,17 @@ export default {
     }),
       // 第一次加载newlist
       problemApi.list("newlist", 1, 10).then(res => {
-        res.data.data.rows.map(item => {
+        res.data.data.rows.forEach(item => {
           this.newlist = [];
           return problemApi.getLabelsByProblemId(item.id).then(lab => {
             let newItem = {
               ...item,
               label: lab.data.data
-            };
+            }
             this.newlist = this.newlist.concat(newItem);
-          });
-        });
-      });
+          })
+        })
+      })
   },
   data() {
     return {
@@ -228,6 +233,9 @@ export default {
     };
   },
   methods: {
+    loadMoreHotList(){
+      console.log("loadMore")
+    },
     switchType(listType) {
       if (listType === "new") {
         this.type = "new";
@@ -245,7 +253,7 @@ export default {
     },
     fetchWaitList() {
       problemApi.list("waitlist", 1, 10).then(res => {
-        res.data.data.rows.map(item => {
+        res.data.data.rows.forEach(item => {
           problemApi.getLabelsByProblemId(item.id).then(lab => {
             let newItem = {
               ...item,
@@ -258,7 +266,7 @@ export default {
     },
     fetchHotList() {
       problemApi.list("hotlist", 1, 10).then(res => {
-        res.data.data.rows.map(item => {
+        res.data.data.rows.forEach(item => {
           problemApi.getLabelsByProblemId(item.id).then(lab => {
             let newItem = {
               ...item,

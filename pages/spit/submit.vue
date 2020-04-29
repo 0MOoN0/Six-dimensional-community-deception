@@ -47,9 +47,6 @@ export default {
   },
   mounted() {
     console.log("app init, my quill insrance object is:", this.myQuillEditor);
-    /*setTimeout(() => {
-        this.content = 'i am changed'
-      }, 3000)*/
   },
   methods: {
     onEditorBlur(editor) {
