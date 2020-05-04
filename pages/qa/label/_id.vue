@@ -9,12 +9,11 @@
               <!-- <img src="./img/widget-h5.png" alt=""> HTML5 -->
               <a href="JavaScript:;" class="sui-btn btn-default guanzhu">关注</a>
             </h3>
-            <p class="words">
-              HTML5 是 HTML 下一个的主要修订版本，现在仍处于发展阶段。广义论及 HTML5 时，实际指的是包括 HTML、CSS 和 JavaScript 在内的一套技术组合。
-              <a
+            <p class="words" v-html="label.description">
+<!--               <a
                 href="javascript:;"
                 id="goto"
-              >[百科]</a>
+              >[百科]</a> -->
             </p>
           </div>
           <div class="tabtags-bottom-line">
@@ -102,21 +101,22 @@
   </div>
 </template>
 <script>
-import "~/assets/css/page-sj-qa-tagDetail.css";
-import problemApi from "@/api/problem";
-import axios from "axios";
+import "~/assets/css/page-sj-qa-tagDetail.css"
+import problemApi from "@/api/problem"
+import labelApi from "@/api/label"
+import axios from "axios"
 export default {
   asyncData({ params }) {
     return axios
       .all([
-        problemApi.orderSearch(1, 10,params.id, { orderword: "createtime" })
+        problemApi.orderSearch(1, 10,params.id, { orderword: "createtime" }),
+        labelApi.findById(params.id)
       ])
       .then(
-        axios.spread(function(qaList) {
-          console.log(qaList)
+        axios.spread(function(qaList, label) {
           return {
             qaList: qaList.data.data,
-            label: params.id
+            label: label.data.data
           };
         })
       );
@@ -140,14 +140,14 @@ export default {
     sortByOrderword(orderword) {
       if (orderword !== undefined && orderword !== null) {
         this.qaSort = orderword;
-        problemApi.orderSearch(1, this.pageSize,this.label, { orderword: this.qaSort }).then(res => {
+        problemApi.orderSearch(1, this.pageSize,this.label.id, { orderword: this.qaSort }).then(res => {
           this.qaList = res.data.data;
         });
       }
     },
     handleCurrentChange(cur) {
       problemApi
-        .orderSearch(cur, this.pageSize,this.label, { orderword: this.qaSort })
+        .orderSearch(cur, this.pageSize,this.label.id, { orderword: this.qaSort })
         .then(res => {
           this.qaList = res.data.data;
         });

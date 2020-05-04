@@ -114,7 +114,7 @@ export default {
           type: res.data.flag ? "success" : "error"
         });
         if (res.data.flag) {
-          this.$router.push("/qa");
+          this.$router.push('/qa/'+res.data.data);
         }
       });
     }

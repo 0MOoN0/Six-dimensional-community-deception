@@ -21,5 +21,11 @@ export default {
             url: `/${group_name}/${api_name}`,
             method: 'get'
         })
+    },
+    thumbup(replyid, thumbup){
+        return request({
+            url: `/${group_name}/${api_name}/thumbup/${replyid}/${thumbup}`,
+            method: 'put'
+        })
     }
 }

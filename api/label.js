@@ -20,5 +20,11 @@ export default {
             url: `/${group_name}/${api_name}`,
             method: 'get'
         })
+    },
+    findById(labelid){
+        return request({
+            url: `/${group_name}/${api_name}/${labelid}`,
+            method: 'get'           
+        })
     }
 }

@@ -36,7 +36,7 @@
                 data-placement="right"
                 data-toggle="tooltip"
                 title="问题对人有帮助，内容完整，我也想知道答案"
-                @click="thumbup(problem.id, 1)"
+                @click="thumbup(problem, 1, 'problem')"
               >
                 <i class="fa fa-caret-up" aria-hidden="true"></i>
               </button>
@@ -47,7 +47,7 @@
                 data-placement="right"
                 data-toggle="tooltip"
                 title="问题没有实际价值，缺少关键内容，没有改进余地"
-                @click="thumbup(problem.id, -1)"
+                @click="thumbup(problem, -1, 'problem')"
               >
                 <i class="fa fa-caret-down" aria-hidden="true"></i>
               </button>
@@ -88,6 +88,7 @@
                   data-placement="right"
                   data-toggle="tooltip"
                   title="问题对人有帮助，内容完整，我也想知道答案"
+                  @click="thumbup(reply, 1, 'reply')"
                 >
                   <i class="fa fa-caret-up" aria-hidden="true"></i>
                 </button>
@@ -98,6 +99,7 @@
                   data-placement="right"
                   data-toggle="tooltip"
                   title="问题没有实际价值，缺少关键内容，没有改进余地"
+                  @click="thumbup(reply, -1, 'reply')"
                 >
                   <i class="fa fa-caret-down" aria-hidden="true"></i>
                 </button>
@@ -231,7 +233,7 @@ export default {
       this.pIndex[index] = this.pIndex[index] === "none" ? "block" : "none";
       commentBox.style.display = this.pIndex[index];
     },
-    thumbup(problemid, thumbup) {
+    thumbup(obj, thumbup, type) {
       if (getUser().name === undefined) {
         this.$message({
           message: "必须登陆才可以点赞哦~",
@@ -239,7 +241,15 @@ export default {
         });
         return;
       }
-      problemApi.thumbup(problemid, thumbup).then(res => {
+      let res = {}
+      if(type === 'reply'){
+        res = replyApi.thumbup(obj.id, thumbup)
+      }else if(type === 'problem'){
+        res = problemApi.thumbup(obj.id, thumbup)
+      }else {
+        return ;
+      }
+      res.then(res => {
         if (res.data.flag) {
           if (res.data.code === 20000) {
             if (thumbup > 0) {
@@ -247,22 +257,22 @@ export default {
                 message: "点赞成功",
                 type: "success"
               });
-              this.problem.thumbup++;
+              obj.thumbup++;
             } else {
               this.$message({
                 message: "点踩成功",
                 type: "success"
               });
-              this.problem.thumbup--;
+              obj.thumbup--;
             }
           } else if (res.data.code === 20005) {
             this.$message({
               message: "不可以重复操作哦~",
               type: "warning"
-            });
+            })
           }
         }
-      });
+      })
     },
     save() {
       // 判断用户是否登陆
